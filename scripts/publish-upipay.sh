@@ -9,7 +9,7 @@ APP=${UPIPAY_REPO:-$HOME/muthu/gitworkspace/upipay}
 export JAVA_HOME=~/.jenv/versions/openjdk64-17.0.19
 cd "$APP"
 # Idempotent: a version already live is skipped; a lower one is refused.
-LIVE=$(curl -fsS https://fdroid.deemwar.com/repo/index-v1.json 2>/dev/null | python3 -c 'import sys,json;d=json.load(sys.stdin);print(max([v["versionCode"] for p in d["packages"].values() for v in p] or [0]))' 2>/dev/null || echo 0)
+LIVE=$(curl -fsS https://fdroid.deemwar.com/repo/index-v1.json 2>/dev/null | python3 -c 'import sys,json;d=json.load(sys.stdin);print(max([v["versionCode"] for v in d["packages"].get("com.deemwar.upipay.forwarder",[])] or [0]))' 2>/dev/null || echo 0)
 WANT=$(grep -oE 'versionCode = [0-9]+' app/build.gradle.kts | grep -oE '[0-9]+')
 [ "$WANT" = "$VC" ] || { echo "app/build.gradle.kts has versionCode $WANT, not $VC"; exit 1; }
 if [ "$VC" -lt "$LIVE" ]; then echo "refusing: live is $LIVE, asked $VC"; exit 1; fi

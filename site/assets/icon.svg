@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <!-- rounded-square background -->
+  <rect x="16" y="16" width="480" height="480" rx="96" fill="#101B33"/>
+  <rect x="16" y="16" width="480" height="480" rx="96" fill="none" stroke="#1E3A5F" stroke-width="8"/>
+  <!-- subtle repo-grid texture -->
+  <g stroke="#1A2B4A" stroke-width="4">
+    <line x1="76" y1="76" x2="436" y2="76"/>
+    <line x1="76" y1="436" x2="436" y2="436"/>
+    <line x1="76" y1="76" x2="76" y2="436"/>
+    <line x1="436" y1="76" x2="436" y2="436"/>
+  </g>
+  <!-- bold D -->
+  <text x="256" y="330" font-family="Helvetica, Arial, sans-serif" font-size="300" font-weight="bold"
+        text-anchor="middle" fill="#FFFFFF">D</text>
+  <!-- little android robot peeking over the D -->
+  <g>
+    <!-- antennae -->
+    <line x1="222" y1="150" x2="204" y2="118" stroke="#3DDC84" stroke-width="10" stroke-linecap="round"/>
+    <line x1="290" y1="150" x2="308" y2="118" stroke="#3DDC84" stroke-width="10" stroke-linecap="round"/>
+    <!-- head -->
+    <path d="M198 214 a58 58 0 0 1 116 0 z" fill="#3DDC84"/>
+    <circle cx="228" cy="184" r="8" fill="#101B33"/>
+    <circle cx="284" cy="184" r="8" fill="#101B33"/>
+    <!-- body -->
+    <rect x="198" y="218" width="116" height="64" rx="14" fill="#3DDC84"/>
+  </g>
+</svg>

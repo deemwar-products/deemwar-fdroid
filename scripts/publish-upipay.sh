@@ -21,7 +21,11 @@ cp app/build/outputs/apk/release/app-release.apk "$R/repo/com.deemwar.upipay.for
 fi
 # Landing page: Compose Multiplatform (wasm) build from the app repo.
 ./gradlew --no-daemon -q :shared:wasmJsBrowserDistribution
-rsync -a shared/build/dist/wasmJs/productionExecutable/ "$S/"
+# UPI Forwarder's own page lives at /upi/; the repo landing page (site/ in the fdroid folder) owns the root.
+rm -rf "$S/upi"; mkdir -p "$S/upi"
+rsync -a --exclude _redirects shared/build/dist/wasmJs/productionExecutable/ "$S/upi/"
+cp ~/muthu/deemwarworkspace/fdroid/site/index.html ~/muthu/deemwarworkspace/fdroid/site/_headers "$S/"
+printf '/pair /upi/ 200\n' > "$S/_redirects"
 cp "$R/repo/com.deemwar.upipay.forwarder_$VC.apk" "$S/upi-forwarder.apk"
 rsync -a --delete --exclude diff --exclude status "$R/repo" "$S/"
 (cd "$S" && sec run CLOUDFLARE_ALLPURPOSE_TOKEN=CLOUDFLARE_API_TOKEN,CLOUDFLARE_ACCOUNT_ID -- \

@@ -38,6 +38,19 @@ Requires: `brew install fdroidserver`, Android build-tools (`apksigner`, `zipali
 3. Copy `scripts/publish-upipay.sh` to `publish-<app>.sh`, change the build, ids and key names. Run it, then verify.
 4. Public-repo rules for the app source still apply: `deemwar-kernel/27-skill-oss-repo.md` (owner approves per repo, 0/0/0 sweep on a fresh one-commit tree, no GitHub Actions, no internal names).
 
+## Second app live: Deemwar Device Admin (2026-11-25)
+`com.deemwar.deviceadmin` (source: `~/muthu/deemwarworkspace/fdroidadmin`, public: `deemwar-products/deemwardeviceadmin`) is our DPC + repo client. It lists every package in this repo, installs/updates with cert-pinned silent `PackageInstaller` installs (`USER_ACTION_NOT_REQUIRED` + `setRequestUpdateOwnership`), and runs a daily WorkManager sync (charging + unmetered). Its own key: `~/upipay-release-local/deemwar-deviceadmin.jks`, password in `sec` as `DEVICEADMIN_APP_KS_PASS`. Publish with `scripts/publish-deviceadmin.sh <versionCode>` (also bumps versionCode in `app/build.gradle.kts` first; tests run as part of the build).
+
+## How updates reach phones (the model to keep in mind)
+- One tap per app, ever: the first install (or first update of an app installed by F-Droid/adb) through Deemwar Admin shows one confirm dialog and transfers installer-of-record to it. Every later version is **silent**, including the daily job.
+- Silent updates fail if: targetSdk is not current for the device's Android version, or another installer still owns the package (run one update through Deemwar Admin to take ownership).
+- Deemwar Admin updates itself via the F-Droid client (it hides itself from its own list).
+- Work profiles only control their own sandbox; personal-profile installs are unaffected. But profiles block `adb dpm set-device-owner` (requires exactly one user, no accounts) and can disable adb entirely.
+- Device Owner (fully silent including first installs) is for **dedicated phones only**: factory reset, no accounts/no Moto Secure Vault/no third-party work profile, then QR provisioning (README of deemwardeviceadmin has the payload — SIGNATURE_CHECKSUM must be the signing **cert** hash, NOT the APK file hash) or the adb fallback after checking `pm list users`. Grant owner BEFORE adding accounts.
+
+## Repo-wide checks after any publish
+`scripts/verify.sh <versionCode>` (upipay) or the publish script's tail: index lists the new version, live APK sha256 equals local, landing page + `repo/icons/icon.png` serve 200. index-v1 `hash`+`hashType` is what clients read.
+
 ## Rules and gotchas
 - Never print or paste key passwords; use `sec run NAME -- cmd`. Never commit `config.yml`, `*.jks`, `*.p12`.
 - The repo key and app key cannot be swapped later without users re-adding the repo or reinstalling. Back both up (`sec`, plus the `~/upipay-release-local` dir) before any machine change.
@@ -45,5 +58,5 @@ Requires: `brew install fdroidserver`, Android build-tools (`apksigner`, `zipali
 - Landing page shows the repo fingerprint. After any repo-key change update `site/index.html` here and in `~/upipay-release-local/site/`.
 - Do not link GitHub or the owner's personal handle on deemwar surfaces (kernel ch. 14/27).
 
-## Current state (2026-11-22)
-Version 1 live, signed `CN=UPI Forwarder`. Not yet installed on a real device. Still to build: the Go gateway that receives signed events and serves the signed config manifest (`docs/MANIFEST.md` in the upipay repo); needs one real credit SMS or notification sample to write the parser.
+## Current state (2026-11-25)
+UPI Forwarder v4 (0.3.1) live — v4 is the silent-update test vehicle for Deemwar Device Admin. Device Admin v10 (2.2) live: repo client UI, silent updates via installer-of-record ownership, daily WorkManager sync, Android 12+ QR-provisioning support. Repo renamed "Deemwar F-Droid OSS" with icon. To do: on-device confirmation that a second update lands with no prompt (after the owner removes the work profile); QR provisioning test on a factory-reset spare.

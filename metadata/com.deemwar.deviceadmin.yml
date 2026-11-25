@@ -1,0 +1,16 @@
+Categories:
+  - System
+License: Apache-2.0
+AuthorName: Deemwar
+Name: Deemwar Device Admin
+AutoName: Deemwar Admin
+Summary: Restricted silent installer for Deemwar F-Droid apps
+Description: |-
+  Minimal Android Device Owner app that silently installs and updates only
+  apps signed by Deemwar and served from the Deemwar F-Droid repo
+  (https://fdroid.deemwar.com/repo). The repo URL, the package allowlist and
+  the pinned signing certificates are compile-time constants: there is no
+  settings screen and no other install entry point. A Device Owner is not
+  subject to per-profile "install unknown apps" restrictions, so updates
+  land without prompts.
+WebSite: https://fdroid.deemwar.com

@@ -1,0 +1,17 @@
+Categories:
+  - Money
+License: Apache-2.0
+Name: UPI Forwarder
+AutoName: UPI Forwarder
+Summary: Forward bank SMS and UPI notifications to your own server
+Description: |-
+  Watches incoming bank SMS and UPI app notifications on this phone and forwards the
+  ones that look like money received to servers you configure (a gateway on your local
+  Wi-Fi or a remote URL), and optionally as an SMS to another number.
+
+  * Settings can be pulled from a signed config URL, so one file controls every phone.
+  * Requests to your server are signed (HMAC-SHA256) and retried until delivered.
+  * Sends a heartbeat so your server can tell when the phone has gone quiet.
+  * Nothing is sent anywhere you have not configured. No analytics, no ads.
+
+  Needs the SMS permission and notification access, both granted by you in Android settings.

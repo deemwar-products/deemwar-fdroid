@@ -1,2 +1,14 @@
+/repo/index-v1.json
+  Cache-Control: no-cache
+/repo/index-v2.json
+  Cache-Control: no-cache
+/repo/index-v1.jar
+  Cache-Control: no-cache
+/repo/entry.json
+  Cache-Control: no-cache
+/repo/entry.jar
+  Cache-Control: no-cache
+/index.html
+  Cache-Control: no-cache
 /*
   X-Content-Type-Options: nosniff

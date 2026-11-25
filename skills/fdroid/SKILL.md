@@ -86,5 +86,18 @@ The owner's Motorola enrolled in **Microsoft Intune** as a BYOD work profile (us
 - **Why not embed Shizuku:** the privilege is a shell-uid PROCESS, which only adb can start; app code can't elevate itself. Shizuku is the clean holder for that adb-started process. Self-contained alternative = embed an adb client (LADB-style; adb + dadb are Apache-2.0) so Deemwar pairs wireless-debugging itself — bigger/fragile, still needs the same one-time pairing.
 - **Start Shizuku via adb for testing:** `adb shell "exec $(pm path moe.shizuku.privileged.api | sed 's/package://;s/base.apk//')lib/arm64/libshizuku.so"` (it's an ELF, execute it, don't `sh` it).
 
+## Phone setup scripts (restricted / work-profile phones)
+Two scripts in `scripts/`, both over adb, both install as the ADB **shell user** which bypasses a work-profile `no_install_unknown_sources_globally` restriction:
+- **`setup-phone.sh [host:port]`** — the one-time (and post-reboot "reload") setup. Installs Shizuku if missing, installs/updates every repo app (cert-pinned + sha256-checked), then (re)starts the Shizuku service. Idempotent — run it again after any reboot to restart Shizuku and re-sync. USB by default; pass an already-paired `ip:port` for wireless. Then on the phone: Deemwar Admin > "Enable silent install (Shizuku)" > Allow, and installs are silent on-device until the next reboot.
+- **`phone-sync.sh [--list|<pkg>...]`** — just install/update repo apps over adb (no Shizuku), with the same checks.
+Start Shizuku by hand: `adb shell "exec $(pm path moe.shizuku.privileged.api | sed 's/package://;s/base.apk//')lib/arm64/libshizuku.so"` (it's an ELF — execute it, don't `sh` it).
+Reboot reality: Shizuku stops on reboot (no auto-start without root); already-installed apps persist, only new installs/updates need Shizuku restarted. Truly reboot-proof silent install needs Device Owner (reset phone, no work profile) or root.
+
+## Cache (fixed 2026-11-25)
+`site/_headers` sets `Cache-Control: no-cache` on `index-v1.json`/`index-v2.json`/`entry.json`/`index.html` so a new publish shows immediately on fdroid.deemwar.com (APKs stay cached — versioned filenames are immutable). Earlier publishes lagged because only `X-Content-Type-Options` was set and Cloudflare edge-cached the index. If a publish still looks stale, purge via the CF API with `CLOUDFLARE_ALLPURPOSE_TOKEN` (zone deemwar.com) — but the header fix normally makes that unnecessary.
+
+## Landing page
+`site/index.html` (kept in `~/upipay-release-local/site/` and this repo's `site/`) carries the onboarding: add the repo to an F-Droid client; for work-profile phones the one-time adb->Shizuku->Deemwar-Admin "Install all" flow; repo fingerprint `302cd39360ead81be14ef80102d41cc40d0e9783066ebd92cb05c74995b9e8cf`.
+
 ## Current state (2026-11-25)
 Live: Device Admin **v14 (3.3)** — Shizuku silent install + Update/Open/Uninstall + Update all + auto-refresh + activity log with Share/Copy/Clear + 6-hourly worker + targetSdk 35. UPI Forwarder v4, Hello v3, Counter v3. Owner's phone (Intune BYOD work profile): all four Deemwar apps installed on the personal profile, Shizuku enabled, installs silent.

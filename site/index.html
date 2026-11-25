@@ -1,5 +1,27 @@
 <!doctype html><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><title>Deemwar F-Droid OSS</title>
-<img src="assets/icon.svg" alt="Deemwar F-Droid OSS" style="width:96px;border-radius:20px">
+<style>body{font-family:-apple-system,Segoe UI,Roboto,sans-serif;max-width:760px;margin:2rem auto;padding:0 1rem;line-height:1.55;color:#111}code{background:#f2f2f2;padding:.1em .35em;border-radius:4px;word-break:break-all}pre{background:#f2f2f2;padding:.8rem;border-radius:8px;overflow-x:auto}h2{margin-top:2rem;border-bottom:1px solid #eee;padding-bottom:.3rem}ol{padding-left:1.2rem}li{margin:.4rem 0}.note{background:#fff8e1;border-left:4px solid #f0c000;padding:.6rem .9rem;border-radius:4px;margin:1rem 0}a{color:#0a58ca}</style>
+<img src="assets/icon.svg" alt="Deemwar F-Droid OSS" style="width:88px;border-radius:20px">
 <h1>Deemwar F-Droid OSS</h1>
-<p>Deemwar's free and open source Android apps, published directly at <code>https://fdroid.deemwar.com/repo</code>.</p>
-<p>Add this repo to the F-Droid client: <a href="repo/index-v1.json">repo URL</a> — or use <a href="https://fdroid.deemwar.com/repo?q=deemwar">https://fdroid.deemwar.com/repo</a> in the client's "Add repository" screen.</p>
+<p>Deemwar's free and open-source Android apps, served directly at <code>https://fdroid.deemwar.com/repo</code>.</p>
+
+<h2>1. Add the repo to an F-Droid client</h2>
+<p>Install any F-Droid client (<a href="https://f-droid.org">F-Droid</a>, Droid-ify, or Neo Store), then add this repository:</p>
+<pre>https://fdroid.deemwar.com/repo?fingerprint=302cd39360ead81be14ef80102d41cc40d0e9783066ebd92cb05c74995b9e8cf</pre>
+<p>Every Deemwar app then appears in the client, installs with one tap, and auto-updates.</p>
+
+<h2>2. (Optional) Deemwar Admin</h2>
+<p><b>Deemwar Admin</b> is a single curated installer for every app in this repo. It only installs apps signed by Deemwar's pinned keys, and can install <b>silently</b> on phones where a work policy blocks normal sideloading. A plain F-Droid client is enough for most phones — Deemwar Admin is for cert-pinning and silent install.</p>
+
+<h2>3. Phones with a work profile (Intune / MDM)</h2>
+<p>A work profile can set <code>no_install_unknown_sources_globally</code>, which blocks <b>all</b> non-Play installers (any F-Droid client and Deemwar Admin alike). The install is still possible as the ADB <b>shell user</b>, which that restriction does not gate. One-time setup, no PC needed after:</p>
+<ol>
+<li>Developer options &rarr; turn on <b>Wireless debugging</b> (or USB debugging).</li>
+<li>Install <b>Shizuku</b> (from this repo or F-Droid) and <b>Deemwar Admin</b>.</li>
+<li>Start Shizuku once via ADB. On-device you can pair in the Shizuku app (Wireless debugging), or from a computer run:
+<pre>adb shell "exec $(pm path moe.shizuku.privileged.api | sed 's/package://;s/base.apk//')lib/arm64/libshizuku.so"</pre></li>
+<li>Open <b>Deemwar Admin</b> &rarr; tap <b>Enable silent install (Shizuku)</b> &rarr; <b>Allow</b>.</li>
+<li>Tap <b>Install / update ALL apps</b> — every Deemwar app installs silently, with Deemwar Admin as owner.</li>
+</ol>
+<div class="note"><b>After a reboot:</b> Shizuku stops (an Android limit without root) and must be started again (step 3), then installs are silent once more. Already-installed apps keep working across reboots; only new installs/updates need Shizuku running. For a phone that stays silent across reboots with zero touch, provision Deemwar Admin as <b>Device Owner</b> on a reset phone with no work profile.</div>
+
+<p style="margin-top:2rem;color:#777;font-size:.9rem">Apache-2.0 · source on request · https://fdroid.deemwar.com/repo</p>

@@ -1,0 +1,11 @@
+Categories:
+  - Development
+License: Apache-2.0
+AuthorName: Deemwar
+Name: Deemwar Hello
+AutoName: Deemwar Hello
+Summary: Tiny canary app that shows its version and who installs its updates
+Description: |-
+  Tiny canary app: shows its version and who installs its updates. A minimal test app published to exercise installs and
+  silent updates from the Deemwar F-Droid repo.
+WebSite: https://fdroid.deemwar.com

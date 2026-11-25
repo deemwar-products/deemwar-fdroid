@@ -39,7 +39,7 @@ Requires: `brew install fdroidserver`, Android build-tools (`apksigner`, `zipali
 4. Public-repo rules for the app source still apply: `deemwar-kernel/27-skill-oss-repo.md` (owner approves per repo, 0/0/0 sweep on a fresh one-commit tree, no GitHub Actions, no internal names).
 
 ## Second app live: Deemwar Device Admin (2026-11-25)
-`com.deemwar.deviceadmin` (source: `~/muthu/deemwarworkspace/fdroidadmin`, public: `deemwar-products/deemwardeviceadmin`) is our DPC + repo client. It lists every package in this repo, installs/updates with cert-pinned silent `PackageInstaller` installs (`USER_ACTION_NOT_REQUIRED` + `setRequestUpdateOwnership`), and runs a daily WorkManager sync (charging + unmetered). Its own key: `~/upipay-release-local/deemwar-deviceadmin.jks`, password in `sec` as `DEVICEADMIN_APP_KS_PASS`. Publish with `scripts/publish-deviceadmin.sh <versionCode>` (also bumps versionCode in `app/build.gradle.kts` first; tests run as part of the build).
+`com.deemwar.deviceadmin` (source: `~/muthu/deemwarworkspace/fdroidadmin`, public: `deemwar-products/deemwardeviceadmin`) is our DPC + repo client. It lists every package in this repo, installs/updates with cert-pinned silent `PackageInstaller` installs (`USER_ACTION_NOT_REQUIRED` + `setRequestUpdateOwnership`), and runs a 6-hourly WorkManager sync (unmetered). Its own key: `~/upipay-release-local/deemwar-deviceadmin.jks`, password in `sec` as `DEVICEADMIN_APP_KS_PASS`. Publish with `scripts/publish-deviceadmin.sh <versionCode>` (also bumps versionCode in `app/build.gradle.kts` first; tests run as part of the build).
 
 ## How updates reach phones (the model to keep in mind)
 - One tap per app, ever: the first install (or first update of an app installed by F-Droid/adb) through Deemwar Admin shows one confirm dialog and transfers installer-of-record to it. Every later version is **silent**, including the daily job.
@@ -58,5 +58,24 @@ Requires: `brew install fdroidserver`, Android build-tools (`apksigner`, `zipali
 - Landing page shows the repo fingerprint. After any repo-key change update `site/index.html` here and in `~/upipay-release-local/site/`.
 - Do not link GitHub or the owner's personal handle on deemwar surfaces (kernel ch. 14/27).
 
+## Sample apps (test vehicles, 2026-11-25)
+`com.deemwar.sample.hello` (shows version + installer + update owner: the silent-update canary) and `com.deemwar.sample.counter` (tap counter; the count must survive updates). Source: `~/muthu/deemwarworkspace/fdroid-samples` (local git, no public remote yet: publishing the source needs owner approval per kernel ch. 27). One shared key `~/upipay-release-local/deemwar-samples.jks`, alias `deemwar-samples`, password in `sec` as `SAMPLES_APP_KS_PASS`, cert SHA-256 `6bd08994e88c568bb8c7502d7d477746d36bb4fad4f123eedc12c59bda742ab1` (pinned in Device Admin since v11). Publish both: `scripts/publish-samples.sh <versionCode> [versionName]` (writes `versions.properties`, builds, publishes, runs verify for both).
+
+## Verify any app
+`scripts/verify.sh <versionCode> [package]` checks live APK sha256 == local AND index-v1 lists that version with `hashType: sha256` and the same hash. Pipe publish output with `set -o pipefail` or a failure hides behind `| tail`.
+
+## Adding a new app: the Device Admin checklist
+A new app's signing cert MUST be added to `Policy.TRUSTED_CERT_SHA256` in fdroidadmin (`Repo.kt`) and a Device Admin version published, or the app shows in the list but every install is BLOCKED. Get the cert with `apksigner verify --print-certs <apk>` (Signer #1 certificate SHA-256).
+Metadata YAML: no `: ` inside Summary (fdroid update dies with "mapping values are not allowed").
+
+## Lessons from on-device testing (Motorola Edge 60 Fusion, Android 17 / API 37)
+- Signature check must use `PackageManager.getPackageArchiveInfo(GET_SIGNING_CERTIFICATES)`. A JarFile (v1) reader rejects v2-only APKs as "not signed" (UPI Forwarder is v2-only). Fixed in v11.
+- PackageInstaller results need a receiver: `STATUS_PENDING_USER_ACTION` carries the confirm Intent that the app must start, else "tap does nothing". `InstallStatusReceiver` does this (v11).
+- Android 11+ package visibility: without `QUERY_ALL_PACKAGES` every repo app looks "not installed" and the background worker skips everything. Fixed in v12.
+- Silent updates on Android 17 needed targetSdk 35 for BOTH Device Admin and the updated app. At targetSdk 34, "Update this app?" still showed. Keep targetSdk current.
+- Proven 2026-11-25: Hello v2->v3 updated with NO dialog, installer = com.deemwar.deviceadmin. First install and uninstall show exactly one system dialog each (expected without Device Owner).
+- Play Protect "App scan recommended" pops on sideloaded installs. Off on the owner's phone (adb `settings put global package_verifier_enable 0` + Play Store > Play Protect > settings > Scan apps off). Re-enable: set it to 1.
+- Work profiles (Moto Secure Vault, user 12) put install restrictions only on their own user. Personal-profile installs are not blocked (checked with `dumpsys user`).
+
 ## Current state (2026-11-25)
-UPI Forwarder v4 (0.3.1) live — v4 is the silent-update test vehicle for Deemwar Device Admin. Device Admin v10 (2.2) live: repo client UI, silent updates via installer-of-record ownership, daily WorkManager sync, Android 12+ QR-provisioning support. Repo renamed "Deemwar F-Droid OSS" with icon. To do: on-device confirmation that a second update lands with no prompt (after the owner removes the work profile); QR provisioning test on a factory-reset spare.
+Live: Device Admin v12 (3.1: Update/Open/Uninstall per app, Update all, auto-refresh on package changes, 6-hourly WorkManager check on unmetered network), UPI Forwarder v4, Hello v3, Counter v3. Owner's phone: Device Admin v12, Hello v3 (owned by Device Admin).

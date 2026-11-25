@@ -1,0 +1,11 @@
+Categories:
+  - Development
+License: Apache-2.0
+AuthorName: Deemwar
+Name: Deemwar Counter
+AutoName: Deemwar Counter
+Summary: Tiny tap counter that keeps its count across updates
+Description: |-
+  Tiny tap counter that keeps its count across updates. A minimal test app published to exercise installs and
+  silent updates from the Deemwar F-Droid repo.
+WebSite: https://fdroid.deemwar.com
